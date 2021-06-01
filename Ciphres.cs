@@ -62,6 +62,46 @@ namespace SzyfrySieci1
             return C;
         }
 
+        public string RailFence_Decode1(string C, int k)
+        {
+            if (String.IsNullOrEmpty(C) || k == 0)
+                return null;
+            if (k == 1)
+                return C;
+
+            string M;
+            StringBuilder result = new StringBuilder();
+            int i = -1;
+            bool down = true;
+            foreach (char c in C)
+            {
+                if (down)
+                {
+                    if (i != k - 1)
+                        i++;
+                    else
+                    {
+                        i--;
+                        down = false;
+                    }
+                }
+                else
+                {
+                    if (i != 0)
+                        i--;
+                    else
+                    {
+                        i++;
+                        down = true;
+                    }
+                }
+                result.Append(c);
+            }
+
+            M = result.ToString();
+            return M;
+        }
+
         public string Vigenere_encode(string M, string K)
         {
             char[,] VigenereSquare = this.VigenereSquare;
@@ -155,6 +195,59 @@ namespace SzyfrySieci1
             }
             
             return VigenereSquare;
+        }
+
+        public string ExtendedCaesar_encode (string A, int k1, int k0, int n)
+        {
+            if (GCD(k0, n) != 1 || GCD(k1, n) != 1)
+            {
+                Console.WriteLine("K0 and K1 should be relatively prime with n");
+                return null;
+            }
+            StringBuilder encodedMessage = new StringBuilder();
+
+            for (int i = 0; i < A.Length; i++)
+                encodedMessage.Append((char) ( ((k1*((int)A[i]-65)+k0)%n ) + 65) );
+
+            return encodedMessage.ToString();
+        }
+        public string ExtendedCaesar_decode(string C, int k1, int k0, int n)
+        {
+            if (GCD(k0, n) != 1 || GCD(k1, n) != 1)
+            {
+                Console.WriteLine("K0 and K1 should be relatively prime with n");
+                return null;
+            }
+            StringBuilder decodedMessage = new StringBuilder();
+
+            for (int i = 0; i < C.Length; i++)
+                decodedMessage.Append( (char) (((((int)C[i] - 65) + (n-k0)) * Math.Pow(k1, CalculatePhi(n)-1) %n + 65)));
+
+            return decodedMessage.ToString();
+        }
+
+        public int GCD(int a, int b)
+        {
+            int c;
+            while (b != 0)
+            {
+                c = a % b;
+                a = b;
+                b = c;
+            }
+            return a;
+        }
+
+        public int CalculatePhi (int n)
+        {
+            int relativelyPrimes = 0;
+
+            for (int i = 1; i<n; i++)
+            {
+                if (GCD(i, n) == 1)
+                    relativelyPrimes++;
+            }
+            return relativelyPrimes;
         }
     }
 }
