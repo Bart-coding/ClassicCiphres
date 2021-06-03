@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Transactions;
 
 namespace SzyfrySieci1
 {
@@ -62,44 +63,61 @@ namespace SzyfrySieci1
             return C;
         }
 
-        public string RailFence_Decode1(string C, int k)
+        public string RailFence_Decode(string C, int k)
         {
-            if (String.IsNullOrEmpty(C) || k == 0)
-                return null;
-            if (k == 1)
+            if (C.Length <= k)
                 return C;
 
-            string M;
-            StringBuilder result = new StringBuilder();
-            int i = -1;
-            bool down = true;
-            foreach (char c in C)
+            int numOfFullVLikeParts = (C.Length - 1) / (2 * k - 2); // zaszyfrowana poprzez rail fence wiadomość wygląda jak płotek składający się z części w kształcie litery V; przyjąłem, że pełna taka część nie zawiera pierwszej swojej litery, ponieważ jest ona z reguły częścią wspólną z poprzednią taką częścią
+            int numOfOtherLetters = (C.Length - 1) % (2 * k - 2);
+
+            string[] rails = new string[k];
+
+            int numOfLettersInRail = 1 + numOfFullVLikeParts;
+            rails[0] = C.Substring(0, numOfLettersInRail);
+            Console.WriteLine(rails[0]);
+            int firstIndexOfNextRail = 0;
+            for (int i = 1; i < k - 1; i++)
             {
-                if (down)
+                firstIndexOfNextRail += numOfLettersInRail;
+                numOfLettersInRail = 2 * numOfFullVLikeParts + (numOfOtherLetters >= i ? numOfOtherLetters >= i + 2*(k - (i + 1)) ? 2 : 1 : 0);
+                rails[i] = C.Substring(firstIndexOfNextRail, numOfLettersInRail);
+                Console.WriteLine(rails[i]);
+            }
+            firstIndexOfNextRail += numOfLettersInRail;
+            numOfLettersInRail = numOfFullVLikeParts + (numOfOtherLetters >= k - 1 ? 1 : 0);
+            rails[k-1] = C.Substring(firstIndexOfNextRail, numOfLettersInRail);
+            Console.WriteLine(rails[k-1]);
+
+            char[] M = new char[C.Length];
+            int shift = 0;
+            int lastChangedIndex = 0;
+            for (int i = 0; i<k; i++)
+            {
+                if (i == 0 || i == k-1)
                 {
-                    if (i != k - 1)
-                        i++;
+                    shift = 2 * k - 2;
+                    for (int j = 0; j < rails[i].Length; j++)
+                        M[i + shift * j] = rails[i][j];
+                    continue;
+                }
+                for (int j = 0; j < rails[i].Length; j++)
+                {
+                    if (j==0)
+                    {
+                        M[i] = rails[i][0];
+                        lastChangedIndex = i;
+                    }
                     else
                     {
-                        i--;
-                        down = false;
+                        shift = ((j % 2) == 0 ? (2 * i) : (2 * (k - (i + 1)))); //litery z wewnętrznych szczebli płotka są rozmieszczone od siebie w dwojaki sposób; para liter w obrębie tej samej "części w kształcie litery V" jest oddalona od siebie inaczej niż para liter z różnych takich części płotka
+                        M[lastChangedIndex + shift] = rails[i][j];
+                        lastChangedIndex+=shift;
                     }
                 }
-                else
-                {
-                    if (i != 0)
-                        i--;
-                    else
-                    {
-                        i++;
-                        down = true;
-                    }
-                }
-                result.Append(c);
             }
 
-            M = result.ToString();
-            return M;
+            return new string(M);
         }
 
         public string Vigenere_encode(string M, string K)
