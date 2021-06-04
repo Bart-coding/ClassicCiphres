@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Transactions;
 
 namespace SzyfrySieci1
 {
-    class Ciphres //Skomentować porządnie
+    class Ciphres
     {
         private char[,] VigenereSquare;
         public Ciphres()
@@ -75,22 +76,19 @@ namespace SzyfrySieci1
 
             int numOfLettersInRail = 1 + numOfFullVLikeParts;
             rails[0] = C.Substring(0, numOfLettersInRail);
-            Console.WriteLine(rails[0]);
             int firstIndexOfNextRail = 0;
             for (int i = 1; i < k - 1; i++)
             {
                 firstIndexOfNextRail += numOfLettersInRail;
                 numOfLettersInRail = 2 * numOfFullVLikeParts + (numOfOtherLetters >= i ? numOfOtherLetters >= i + 2*(k - (i + 1)) ? 2 : 1 : 0);
                 rails[i] = C.Substring(firstIndexOfNextRail, numOfLettersInRail);
-                Console.WriteLine(rails[i]);
             }
             firstIndexOfNextRail += numOfLettersInRail;
             numOfLettersInRail = numOfFullVLikeParts + (numOfOtherLetters >= k - 1 ? 1 : 0);
             rails[k-1] = C.Substring(firstIndexOfNextRail, numOfLettersInRail);
-            Console.WriteLine(rails[k-1]);
 
             char[] M = new char[C.Length];
-            int shift = 0;
+            int shift;
             int lastChangedIndex = 0;
             for (int i = 0; i<k; i++)
             {
@@ -118,6 +116,159 @@ namespace SzyfrySieci1
             }
 
             return new string(M);
+        }
+
+        public string MatrixRearrangement2a_encode(string M, string key, int d)
+        {
+            List<string> fullLines = new List<string>();
+            string notFullLine = null; // ostatnia linia o niepełnej długości
+
+            int numOfFullLines = M.Length / d;
+            
+            for (int i = 0; i< numOfFullLines; i++)
+            {
+                fullLines.Add(M.Substring(i * d, d));
+            }
+
+            int numOfOtherLetters = M.Length % d;
+            if (numOfOtherLetters > 0)
+            {
+                notFullLine = M.Substring(numOfFullLines * d, numOfOtherLetters);
+            }
+
+            StringBuilder result = new StringBuilder();
+
+            string[] keyNumbersTemp = key.Split('-');
+            List<int> keyIndices = new List<int>();
+            foreach (string num in keyNumbersTemp)
+            {
+                keyIndices.Add(Convert.ToInt32(num)-1);
+            }
+
+            foreach (string line in fullLines)
+            {
+                foreach (int indice in keyIndices)
+                {
+                    result.Append(line[indice]);
+                }
+            }
+            if (notFullLine != null)
+            {
+                foreach (int indice in keyIndices)
+                {
+                    if (indice >= notFullLine.Length)
+                        continue;
+
+                    result.Append(notFullLine[indice]);
+                }
+            }
+                
+            return result.ToString();
+        }
+
+        public string MatrixRearrangement2a_decode(string C, string key, int d)
+        {
+            List<string> fullLines = new List<string>();
+            string notFullLine = null; // ostatnia linia o niepełnej długości
+
+            int numOfFullLines = C.Length / d;
+
+            for (int i = 0; i < numOfFullLines; i++)
+            {
+                fullLines.Add(C.Substring(i * d, d));
+            }
+
+            int numOfOtherLetters = C.Length % d;
+            if (numOfOtherLetters > 0)
+            {
+                notFullLine = C.Substring(numOfFullLines * d, numOfOtherLetters);
+            }
+
+            StringBuilder result = new StringBuilder();
+            List<char> partOfMessage = new List<char>(new char[d]);
+
+            string[] keyNumbersTemp = key.Split('-');
+            List<int> keyIndices = new List<int>();
+            foreach (string num in keyNumbersTemp)
+            {
+                keyIndices.Add(Convert.ToInt32(num) - 1);
+            }
+            for (int i = 0; i<fullLines.Count; i++)
+            {
+                for (int j = 0; j<d; j++)
+                {
+                    partOfMessage[keyIndices[j]] = fullLines[i][j];
+                }
+
+                result.Append(partOfMessage.ToArray());
+                partOfMessage = new List<char>(new char[d]);
+            }
+            if (notFullLine != null)
+            {
+                keyIndices.RemoveAll(i => i >= numOfOtherLetters);
+                for (int j = 0; j < numOfOtherLetters; j++)
+                {
+                    partOfMessage[keyIndices[j]] = notFullLine[j];
+                }
+
+                result.Append(partOfMessage.ToArray());
+                partOfMessage.Clear();
+            }
+
+            return result.ToString();
+        }
+
+        public string ExtendedCaesar_encode(string A, int k1, int k0, int n)
+        {
+            if (GCD(k0, n) != 1 || GCD(k1, n) != 1)
+            {
+                Console.WriteLine("K0 and K1 should be relatively prime with n");
+                return null;
+            }
+            StringBuilder encodedMessage = new StringBuilder();
+
+            for (int i = 0; i < A.Length; i++)
+                encodedMessage.Append((char)(((k1 * ((int)A[i] - 65) + k0) % n) + 65));
+
+            return encodedMessage.ToString();
+        }
+        public string ExtendedCaesar_decode(string C, int k1, int k0, int n)
+        {
+            if (GCD(k0, n) != 1 || GCD(k1, n) != 1)
+            {
+                Console.WriteLine("K0 and K1 should be relatively prime with n");
+                return null;
+            }
+            StringBuilder decodedMessage = new StringBuilder();
+
+            for (int i = 0; i < C.Length; i++)
+                decodedMessage.Append((char)(((((int)C[i] - 65) + (n - k0)) * Math.Pow(k1, CalculatePhi(n) - 1) % n + 65)));
+
+            return decodedMessage.ToString();
+        }
+
+        public int GCD(int a, int b)
+        {
+            int c;
+            while (b != 0)
+            {
+                c = a % b;
+                a = b;
+                b = c;
+            }
+            return a;
+        }
+
+        public int CalculatePhi(int n)
+        {
+            int relativelyPrimes = 0;
+
+            for (int i = 1; i < n; i++)
+            {
+                if (GCD(i, n) == 1)
+                    relativelyPrimes++;
+            }
+            return relativelyPrimes;
         }
 
         public string Vigenere_encode(string M, string K)
@@ -215,57 +366,6 @@ namespace SzyfrySieci1
             return VigenereSquare;
         }
 
-        public string ExtendedCaesar_encode (string A, int k1, int k0, int n)
-        {
-            if (GCD(k0, n) != 1 || GCD(k1, n) != 1)
-            {
-                Console.WriteLine("K0 and K1 should be relatively prime with n");
-                return null;
-            }
-            StringBuilder encodedMessage = new StringBuilder();
-
-            for (int i = 0; i < A.Length; i++)
-                encodedMessage.Append((char) ( ((k1*((int)A[i]-65)+k0)%n ) + 65) );
-
-            return encodedMessage.ToString();
-        }
-        public string ExtendedCaesar_decode(string C, int k1, int k0, int n)
-        {
-            if (GCD(k0, n) != 1 || GCD(k1, n) != 1)
-            {
-                Console.WriteLine("K0 and K1 should be relatively prime with n");
-                return null;
-            }
-            StringBuilder decodedMessage = new StringBuilder();
-
-            for (int i = 0; i < C.Length; i++)
-                decodedMessage.Append( (char) (((((int)C[i] - 65) + (n-k0)) * Math.Pow(k1, CalculatePhi(n)-1) %n + 65)));
-
-            return decodedMessage.ToString();
-        }
-
-        public int GCD(int a, int b)
-        {
-            int c;
-            while (b != 0)
-            {
-                c = a % b;
-                a = b;
-                b = c;
-            }
-            return a;
-        }
-
-        public int CalculatePhi (int n)
-        {
-            int relativelyPrimes = 0;
-
-            for (int i = 1; i<n; i++)
-            {
-                if (GCD(i, n) == 1)
-                    relativelyPrimes++;
-            }
-            return relativelyPrimes;
-        }
+        
     }
 }
