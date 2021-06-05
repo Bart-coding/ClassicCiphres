@@ -302,7 +302,7 @@ namespace SzyfrySieci1
                 numOfMatrixLines++;
             }
 
-            List<string> CBlocks = new List<String>(new string[keyLength]);
+            List<string> MatrixColumns = new List<String>(new string[keyLength]);
             int handledMColumn;
 
             int nextBlockBeginning = 0;
@@ -316,19 +316,19 @@ namespace SzyfrySieci1
                 else
                     lettersToCut = numOfFullMatrixLines;
 
-                CBlocks[handledMColumn] = C.Substring(nextBlockBeginning, lettersToCut);
+                MatrixColumns[handledMColumn] = C.Substring(nextBlockBeginning, lettersToCut);
                 nextBlockBeginning += lettersToCut;
             }
 
             StringBuilder M = new StringBuilder();
 
             for (int line = 0; line < numOfFullMatrixLines; line++)
-                for (int column = 0; column<CBlocks.Count; column++)
-                    M.Append(CBlocks[column][line]);
+                foreach (string column in MatrixColumns)
+                    M.Append(column[line]);
 
             if (numOfOtherMatrixLetters > 0)
                 for (int column = 0; column < numOfOtherMatrixLetters; column++)
-                    M.Append(CBlocks[column][numOfFullMatrixLines]);
+                    M.Append(MatrixColumns[column][numOfFullMatrixLines]);
 
             return M.ToString();
         }
