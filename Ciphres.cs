@@ -221,7 +221,7 @@ namespace SzyfrySieci1
         struct Key2b_letter
         {
             public char letter;
-            public int initialIndice;
+            public int initialIndice;   //indeks bloku liter z macierzy
         }
 
         public string MatrixRearrangement2b_encode(string M, string Key)
@@ -233,10 +233,7 @@ namespace SzyfrySieci1
             char[][] matrix = new char[numOfFullLines][];
             
             for (int i = 0; i<numOfFullLines; i++)
-            {
                 matrix[i] = M.Substring(i * keyLength, keyLength).ToCharArray();
-                Console.WriteLine(matrix[i]);
-            }
 
             int numOfOtherLetters = messageLength % keyLength; // litery poza pełnymi wierszami
             char[] notFullLine;
@@ -245,7 +242,6 @@ namespace SzyfrySieci1
             {
                 notFullLine = new char[numOfOtherLetters];
                 otherLetters = M.Substring(messageLength - numOfOtherLetters);
-                Console.WriteLine(otherLetters);
             }
             
             Key2b_letter[] keyLetters = new Key2b_letter[keyLength];
@@ -260,10 +256,6 @@ namespace SzyfrySieci1
             }
 
             Array.Sort<Key2b_letter>(keyLetters, (a, b) => a.letter.CompareTo(b.letter));
-            for (int i = 0; i<keyLetters.Length; i++)
-            {
-                Console.WriteLine(keyLetters[i].letter);
-            }
 
             StringBuilder C = new StringBuilder();
             int handledColumn; //kopiowana kolumna macierzy
@@ -271,20 +263,74 @@ namespace SzyfrySieci1
             {
                 handledColumn = keyLetters[i].initialIndice;
                 for (int j = 0; j< numOfFullLines; j++)
-                {
                    C.Append(matrix[j][handledColumn]);
-                }
-                Console.WriteLine(C);
 
-                if (numOfOtherLetters > 0 && handledColumn < numOfOtherLetters)
-                {
+                if (handledColumn < numOfOtherLetters)
                     C.Append(otherLetters[handledColumn]);
-                    Console.WriteLine(C);
-                }
 
             }
 
             return C.ToString();
+        }
+
+        public string MatrixRearrangement2b_decode(string C, string Key)
+        {
+            C = String.Join("", C.Split(' '));
+            int CLength = C.Length;
+            int keyLength = Key.Length;
+
+            Key2b_letter[] keyLetters = new Key2b_letter[keyLength];
+
+            for (int i = 0; i < keyLength; i++)
+            {
+                keyLetters[i] = new Key2b_letter
+                {
+                    letter = Key[i],
+                    initialIndice = i
+                };
+            }
+
+            Array.Sort<Key2b_letter>(keyLetters, (a, b) => a.letter.CompareTo(b.letter));
+
+            int numOfFullMatrixLines = CLength / keyLength;
+            int numOfOtherMatrixLetters = CLength % keyLength;
+            string otherLetters = null;
+            int numOfMatrixLines = numOfFullMatrixLines;
+            if (numOfOtherMatrixLetters > 0)
+            {
+                otherLetters = C.Substring(C.Length - numOfOtherMatrixLetters);
+                numOfMatrixLines++;
+            }
+
+            List<string> CBlocks = new List<String>(new string[keyLength]);
+            int handledMColumn;
+
+            int nextBlockBeginning = 0;
+            int lettersToCut;
+            for (int i = 0; i < keyLength; i++) // dla każdej litery z klucza odpowiada kolumna macierzy wiadomości M
+            {
+                handledMColumn = keyLetters[i].initialIndice; // initialIndice wskazuje na to, który w kolejności blok szyfru C wypełniła dana kolumna macierzy wiadomości M
+
+                if (handledMColumn < numOfOtherMatrixLetters)
+                    lettersToCut = numOfMatrixLines;
+                else
+                    lettersToCut = numOfFullMatrixLines;
+
+                CBlocks[handledMColumn] = C.Substring(nextBlockBeginning, lettersToCut);
+                nextBlockBeginning += lettersToCut;
+            }
+
+            StringBuilder M = new StringBuilder();
+
+            for (int line = 0; line < numOfFullMatrixLines; line++)
+                for (int column = 0; column<CBlocks.Count; column++)
+                    M.Append(CBlocks[column][line]);
+
+            if (numOfOtherMatrixLetters > 0)
+                for (int column = 0; column < numOfOtherMatrixLetters; column++)
+                    M.Append(CBlocks[column][numOfFullMatrixLines]);
+
+            return M.ToString();
         }
 
         public string ExtendedCaesar_encode(string A, int k1, int k0, int n)
