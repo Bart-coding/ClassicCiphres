@@ -255,7 +255,7 @@ namespace SzyfrySieci1
                 };
             }
 
-            Array.Sort<KeyLetter>(keyLetters, (a, b) => a.value.CompareTo(b.value));
+            keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray();
 
             StringBuilder C = new StringBuilder();
             int handledColumn; //kopiowana kolumna macierzy
@@ -290,7 +290,7 @@ namespace SzyfrySieci1
                 };
             }
 
-            Array.Sort<KeyLetter>(keyLetters, (a, b) => a.value.CompareTo(b.value));
+            keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray();
 
             int numOfFullMatrixLines = CLength / keyLength;
             int numOfOtherMatrixLetters = CLength % keyLength;
