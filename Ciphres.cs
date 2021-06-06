@@ -218,9 +218,9 @@ namespace SzyfrySieci1
             return M.ToString();
         }
 
-        struct Key2b_letter
+        struct KeyLetter
         {
-            public char letter;
+            public char value;
             public int initialIndice;   //indeks bloku liter z macierzy
         }
 
@@ -243,19 +243,19 @@ namespace SzyfrySieci1
                 notFullLine = new char[numOfOtherLetters];
                 otherLetters = M.Substring(messageLength - numOfOtherLetters);
             }
-            
-            Key2b_letter[] keyLetters = new Key2b_letter[keyLength];
+
+            KeyLetter[] keyLetters = new KeyLetter[keyLength];
 
             for (int i = 0; i < keyLength; i++)
             {
-                keyLetters[i] = new Key2b_letter
+                keyLetters[i] = new KeyLetter
                 {
-                    letter = Key[i],
+                    value = Key[i],
                     initialIndice = i
                 };
             }
 
-            Array.Sort<Key2b_letter>(keyLetters, (a, b) => a.letter.CompareTo(b.letter));
+            Array.Sort<KeyLetter>(keyLetters, (a, b) => a.value.CompareTo(b.value));
 
             StringBuilder C = new StringBuilder();
             int handledColumn; //kopiowana kolumna macierzy
@@ -279,18 +279,18 @@ namespace SzyfrySieci1
             int CLength = C.Length;
             int keyLength = Key.Length;
 
-            Key2b_letter[] keyLetters = new Key2b_letter[keyLength];
+            KeyLetter[] keyLetters = new KeyLetter[keyLength];
 
             for (int i = 0; i < keyLength; i++)
             {
-                keyLetters[i] = new Key2b_letter
+                keyLetters[i] = new KeyLetter
                 {
-                    letter = Key[i],
+                    value = Key[i],
                     initialIndice = i
                 };
             }
 
-            Array.Sort<Key2b_letter>(keyLetters, (a, b) => a.letter.CompareTo(b.letter));
+            Array.Sort<KeyLetter>(keyLetters, (a, b) => a.value.CompareTo(b.value));
 
             int numOfFullMatrixLines = CLength / keyLength;
             int numOfOtherMatrixLetters = CLength % keyLength;
@@ -331,6 +331,55 @@ namespace SzyfrySieci1
                     M.Append(MatrixColumns[column][numOfFullMatrixLines]);
 
             return M.ToString();
+        }
+
+        public string MatrixRearrangement2c_encode(string M, string Key)
+        {
+            //M = String.Join("", M.Split(' '));
+            int MLength = M.Length;
+            int keyLength = Key.Length;
+
+            KeyLetter[] keyLetters = new KeyLetter[keyLength];
+
+            for (int i = 0; i < keyLength; i++)
+            {
+                keyLetters[i] = new KeyLetter
+                {
+                    value = Key[i],
+                    initialIndice = i
+                };
+            }
+
+            keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray() ;
+
+            List<string> matrixLines = new List<string>();
+            int incrementedKeyLetterIdx;
+
+            for (int startIdxOfNextMessageBlock = 0, i = 0; startIdxOfNextMessageBlock < MLength; i++)
+            {
+                incrementedKeyLetterIdx = keyLetters[i].initialIndice + 1;
+                if (startIdxOfNextMessageBlock + incrementedKeyLetterIdx > MLength)
+                    incrementedKeyLetterIdx -= (startIdxOfNextMessageBlock + incrementedKeyLetterIdx) - MLength;
+                    
+                matrixLines.Add(M.Substring(startIdxOfNextMessageBlock, incrementedKeyLetterIdx));
+                startIdxOfNextMessageBlock += incrementedKeyLetterIdx;
+                
+                Console.WriteLine(matrixLines[i]);//
+                Console.WriteLine(i+" "+startIdxOfNextMessageBlock+" "+MLength);//
+            }
+
+            StringBuilder C = new StringBuilder();
+            foreach (KeyLetter keyLetter in keyLetters)
+            {
+                int keyLetterIdx = keyLetter.initialIndice;
+                foreach (string matrixLine in matrixLines)
+                {
+                    if (keyLetterIdx < matrixLine.Length)
+                        C.Append(matrixLine[keyLetterIdx]);
+                }
+            }
+
+            return C.ToString();
         }
 
         public string ExtendedCaesar_encode(string A, int k1, int k0, int n)
