@@ -364,8 +364,6 @@ namespace SzyfrySieci1
                 matrixLines.Add(M.Substring(startIdxOfNextMessageBlock, incrementedKeyLetterIdx));
                 startIdxOfNextMessageBlock += incrementedKeyLetterIdx;
                 
-                Console.WriteLine(matrixLines[i]);//
-                Console.WriteLine(i+" "+startIdxOfNextMessageBlock+" "+MLength);//
             }
 
             StringBuilder C = new StringBuilder();
@@ -380,6 +378,105 @@ namespace SzyfrySieci1
             }
 
             return C.ToString();
+        }
+
+        public string MatrixRearrangement2c_decode(string C, string Key)
+        {
+            //C = String.Join("", C.Split(' '));
+            int CLength = C.Length;
+            int keyLength = Key.Length;
+
+            KeyLetter[] keyLetters = new KeyLetter[keyLength];
+
+            for (int i = 0; i < keyLength; i++)
+            {
+                keyLetters[i] = new KeyLetter
+                {
+                    value = Key[i],
+                    initialIndice = i
+                };
+            }
+
+            keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray();
+
+            int fullMatrixLinesCounter;
+            int numOfAllMatrixLines = 0;
+            int matrixLettersCounter = 0, numOfOtherMatrixLetters = 0;
+            for (fullMatrixLinesCounter = 0; fullMatrixLinesCounter < keyLetters.Length; fullMatrixLinesCounter++)
+            {
+                matrixLettersCounter += keyLetters[fullMatrixLinesCounter].initialIndice + 1;
+
+                if (matrixLettersCounter >= CLength)
+                {
+                    if (matrixLettersCounter > CLength)
+                    {
+                        numOfOtherMatrixLetters = CLength - (matrixLettersCounter - (keyLetters[fullMatrixLinesCounter--].initialIndice + 1));
+                        numOfAllMatrixLines++; //tymczasowo, później zostaje podniesiona o liczbę pełnych wierszy
+                    }
+                    break;
+                }
+            }
+
+            matrixLettersCounter = CLength;
+            fullMatrixLinesCounter++; //wcześniej wiersze macierzy były liczone od 0
+            numOfAllMatrixLines += fullMatrixLinesCounter;
+
+            List<int> matrixColumnsLength = new List<int>(); //długości kolumn macierzy i zarazem długości bloków szyfru
+            int letterCounter = 0;
+            int handledColumnLength = 0;
+            int handledColumnIdx = 0;
+
+            List<StringBuilder> matrixColumns = new List<StringBuilder>();
+            int CCharIdx = 0;
+            while (letterCounter != CLength)
+            {
+                matrixColumns.Add(new StringBuilder());
+                for (int i = 0; i<fullMatrixLinesCounter; i++)
+                {
+                    if (keyLetters[i].initialIndice >= keyLetters[handledColumnIdx].initialIndice)
+                    {
+                        matrixColumns[handledColumnIdx].Append(C[CCharIdx++]);
+                        handledColumnLength++;
+                    }
+                    else
+                    {
+                        matrixColumns[handledColumnIdx].Append('\0');
+                    }
+                        
+                }
+
+                if (numOfOtherMatrixLetters > keyLetters[handledColumnIdx].initialIndice)
+                {
+                    matrixColumns[handledColumnIdx].Append(C[CCharIdx++]);
+                    handledColumnLength++;
+                }
+                else
+                {
+                    matrixColumns[handledColumnIdx].Append('\0');
+                }
+                        
+
+                matrixColumnsLength.Add(handledColumnLength); // kolumny są nieposortowane; ułożone są w kolejności w jakiej były brane do szyfru
+                letterCounter += handledColumnLength;
+                handledColumnLength = 0;
+                handledColumnIdx++;
+            }
+
+
+            StringBuilder M = new StringBuilder();
+
+            for (int i = 0; i < numOfAllMatrixLines; i++)
+            {
+                for (int j = 0; j < keyLetters.Length; j++)
+                {
+                    handledColumnIdx = Array.FindIndex(keyLetters, keyLetter => keyLetter.initialIndice == j);
+                    if (matrixColumns[handledColumnIdx][i] != '\0')
+                        M.Append(matrixColumns[handledColumnIdx][i]);
+                }
+            }
+
+
+            return M.ToString();
         }
 
         public string ExtendedCaesar_encode(string A, int k1, int k0, int n)
