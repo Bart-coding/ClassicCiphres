@@ -23,7 +23,7 @@ namespace SzyfrySieci1
             for (int i = 0; i < k; i++)
             {
                 StringBuilder rail = new StringBuilder(); //tworzenie k szczebli
-                fence.Add(rail);    //dodawanie szczebli do płotka
+                fence.Add(rail);                          //dodawanie szczebli do płotka
             }
 
             int j = -1;
@@ -73,42 +73,45 @@ namespace SzyfrySieci1
 
             string[] rails = new string[k];
 
-            int numOfLettersInRail = 1 + numOfFullVLikeParts;
+            int numOfLettersInRail = 1 + numOfFullVLikeParts; //w górnej szynie jest tyle liter, ile jest części V + 1-sza litera
             rails[0] = C.Substring(0, numOfLettersInRail);
             int firstIndexOfNextRail = 0;
             for (int i = 1; i < k - 1; i++)
             {
                 firstIndexOfNextRail += numOfLettersInRail;
                 numOfLettersInRail = 2 * numOfFullVLikeParts + (numOfOtherLetters >= i ? numOfOtherLetters >= i + 2 * (k - (i + 1)) ? 2 : 1 : 0);
+                    //w "wewnętrznej" szynie jest tyle liter, ile wynosi dwukrotność części V powiększona o 1 lub 2 litery z ewent. niepełnej części V; 2*(k-(i+1)) to odległość litery z "wnętrza" (nie)pełnej częsci V do kolejnej z tego wnętrza na tej samej wysokości
                 rails[i] = C.Substring(firstIndexOfNextRail, numOfLettersInRail);
             }
             firstIndexOfNextRail += numOfLettersInRail;
-            numOfLettersInRail = numOfFullVLikeParts + (numOfOtherLetters >= k - 1 ? 1 : 0);
+            numOfLettersInRail = numOfFullVLikeParts + (numOfOtherLetters >= k - 1 ? 1 : 0); //w dolnej szynie jest tyle liter, ile jest części V i ewentualnie dodatkowa jeśli pozostałych liter jest chociaż k-1
             rails[k - 1] = C.Substring(firstIndexOfNextRail, numOfLettersInRail);
 
             char[] M = new char[C.Length];
             int shift;
             int lastChangedIndex = 0;
-            for (int i = 0; i < k; i++)
+            for (int i = 0; i < k; i++) //dla każdej szyny
             {
                 if (i == 0 || i == k - 1)
                 {
                     shift = 2 * k - 2;
-                    for (int j = 0; j < rails[i].Length; j++)
-                        M[i + shift * j] = rails[i][j];
+                    for (int j = 0; j < rails[i].Length; j++) //każdą literę z szyny
+                        M[i + shift * j] = rails[i][j];       //umieszczamy w ciągu wynikowym co shift równy długości części V
                     continue;
                 }
                 for (int j = 0; j < rails[i].Length; j++)
                 {
                     if (j == 0)
                     {
-                        M[i] = rails[i][0];
+                        M[i] = rails[i][0]; //wszystkie pierwsze litery "wewn." szyn znajdują się na początku wyjścia (pomiędzy indeksem 0 a indeksem k-1)
                         lastChangedIndex = i;
                     }
                     else
                     {
-                        shift = ((j % 2) == 0 ? (2 * i) : (2 * (k - (i + 1)))); //litery z wewnętrznych szczebli płotka są rozmieszczone od siebie w dwojaki sposób;
+                        shift = ((j % 2) == 0 ? (2 * i) : (2 * (k - (i + 1)))); //litery z wewnętrznych szczebli płotka są rozmieszczone od siebie w dwojaki sposób
                                                                                 //para liter w obrębie tej samej "części w kształcie litery V" jest oddalona od siebie inaczej niż para liter z różnych takich "części V" płotka
+                                                                                //jeśli j jest parzyste, to należy umieścić literę w miejscu oddalonym od poprzedniego o dwukrotną "odległość" szyny od zera (ruch od poprzedniej części V do nowej)
+                                                                                //jeśli nie, w miejscu oddalonym o dwukrotną odległość szyny od drugiego końca (ruch w obrębie tej samej części V)
                         M[lastChangedIndex + shift] = rails[i][j];  
                         lastChangedIndex += shift;
                     }
@@ -121,19 +124,19 @@ namespace SzyfrySieci1
         public string MatrixRearrangement2a_encode(string M, string key, int d) //d mogłoby być także wyznaczane z klucza
         {
             List<string> fullLines = new List<string>();
-            string notFullLine = null; // ostatnia linia o niepełnej długości
+            string notFullLine = null; //ostatni wiersz o niepełnej długości
 
-            int numOfFullLines = M.Length / d;
+            int numOfFullLines = M.Length / d; //liczba pełnych wierszy macierzy
 
             for (int i = 0; i < numOfFullLines; i++)
             {
-                fullLines.Add(M.Substring(i * d, d));
+                fullLines.Add(M.Substring(i * d, d)); //wypełnianie pełnych wierszy macierzy kolejnymi podciągami wejścia długości d
             }
 
-            int numOfOtherLetters = M.Length % d;
+            int numOfOtherLetters = M.Length % d; //liczba liter niepełnego wiersza macierzy
             if (numOfOtherLetters > 0)
             {
-                notFullLine = M.Substring(numOfFullLines * d, numOfOtherLetters);
+                notFullLine = M.Substring(numOfFullLines * d, numOfOtherLetters); //wypełnienie niepełnego wiersza macierzy ostatnim podciągiem wejścia, długości numOfOtherLetters
             }
 
             StringBuilder C = new StringBuilder();
@@ -142,21 +145,21 @@ namespace SzyfrySieci1
             List<int> keyIndices = new List<int>();
             foreach (string num in keyNumbersTemp)
             {
-                keyIndices.Add(Convert.ToInt32(num) - 1);
+                keyIndices.Add(Convert.ToInt32(num) - 1); //konwersja i zapamiętanie kolejnych zdekrementowanych cyfr klucza
             }
 
-            foreach (string line in fullLines)
+            foreach (string line in fullLines) // dla każdego wiersza z grona pełnych wierszy
             {
-                foreach (int indice in keyIndices)
+                foreach (int indice in keyIndices) // dla każdego indeksu (każdej zdekrementowanej cyfry z klucza)
                 {
-                    C.Append(line[indice]);
+                    C.Append(line[indice]); // dodajemy do wyniku literę z wiersza znajdującą się pod danym indeksem
                 }
             }
-            if (notFullLine != null)
+            if (notFullLine != null) // dla niepełnego wierszarsza
             {
                 foreach (int indice in keyIndices)
                 {
-                    if (indice >= notFullLine.Length)
+                    if (indice >= notFullLine.Length) // jeśli indeks przekracza wymiary niepełnego wiersza
                         continue;
 
                     C.Append(notFullLine[indice]);
