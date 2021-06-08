@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Transactions;
 
 namespace SzyfrySieci1
 {
@@ -18,9 +16,9 @@ namespace SzyfrySieci1
         {
             if (String.IsNullOrEmpty(M) || k == 0) //przypadek dla pustego słowa wejściowego lub wysokości płotku = 0
                 return null;
-            if (k == 1) //przypadek dla wysokości płotku = 0
+            if (k == 1) //przypadek dla wysokości płotku = 1
                 return M;
-            string C;
+
             List<StringBuilder> fence = new List<StringBuilder>(); //płotek
             for (int i = 0; i < k; i++)
             {
@@ -55,13 +53,13 @@ namespace SzyfrySieci1
                 fence[j].Append(c); //dodanie litery do szczebla j płotka, do którego dotarto w danej iteracji
             }
 
-            StringBuilder result = new StringBuilder();
+            StringBuilder C = new StringBuilder();
             foreach (StringBuilder rail in fence)
             {
-                result.Append(rail);    //łączenie szczebli płotka ze znakami w jednopoziomowy wyjściowy łańcuch znaków
+                C.Append(rail);    //łączenie szczebli płotka ze znakami w jednopoziomowy wyjściowy łańcuch znaków
             }
-            C = result.ToString();
-            return C;
+
+            return C.ToString();
         }
 
         public string RailFence_Decode(string C, int k)
@@ -69,7 +67,8 @@ namespace SzyfrySieci1
             if (C.Length <= k)
                 return C;
 
-            int numOfFullVLikeParts = (C.Length - 1) / (2 * k - 2); // zaszyfrowana poprzez rail fence wiadomość wygląda jak płotek składający się z części w kształcie litery V; przyjąłem, że pełna taka część nie zawiera pierwszej swojej litery, ponieważ jest ona z reguły częścią wspólną z poprzednią taką częścią
+            int numOfFullVLikeParts = (C.Length - 1) / (2 * k - 2); // zaszyfrowana poprzez rail fence wiadomość wygląda jak płotek składający się z części w kształcie litery V;
+                                                                    //przyjąłem, że pełna taka część nie zawiera pierwszej swojej litery, ponieważ jest ona z reguły częścią wspólną z poprzednią taką częścią
             int numOfOtherLetters = (C.Length - 1) % (2 * k - 2);
 
             string[] rails = new string[k];
@@ -108,8 +107,9 @@ namespace SzyfrySieci1
                     }
                     else
                     {
-                        shift = ((j % 2) == 0 ? (2 * i) : (2 * (k - (i + 1)))); //litery z wewnętrznych szczebli płotka są rozmieszczone od siebie w dwojaki sposób; para liter w obrębie tej samej "części w kształcie litery V" jest oddalona od siebie inaczej niż para liter z różnych takich części płotka
-                        M[lastChangedIndex + shift] = rails[i][j];
+                        shift = ((j % 2) == 0 ? (2 * i) : (2 * (k - (i + 1)))); //litery z wewnętrznych szczebli płotka są rozmieszczone od siebie w dwojaki sposób;
+                                                                                //para liter w obrębie tej samej "części w kształcie litery V" jest oddalona od siebie inaczej niż para liter z różnych takich "części V" płotka
+                        M[lastChangedIndex + shift] = rails[i][j];  
                         lastChangedIndex += shift;
                     }
                 }
@@ -221,7 +221,7 @@ namespace SzyfrySieci1
         struct KeyLetter
         {
             public char value;
-            public int initialIndice;   //indeks bloku liter z macierzy
+            public int initialIndice; //indeks bloku liter z macierzy z wiadomością do zaszyfrowania
         }
 
         public string MatrixRearrangement2b_encode(string M, string Key)
