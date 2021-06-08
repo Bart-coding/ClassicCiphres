@@ -225,7 +225,7 @@ namespace SzyfrySieci1
         struct KeyLetter
         {
             public char value;
-            public int initialIndice; //indeks bloku liter z macierzy z wiadomością do zaszyfrowania
+            public int initialIndice; //pierwotny indeks danej litery w kluczu, niezależny od jej wartości liczbowej (zależnej od kolejności w alfabecie)
         }
 
         public string MatrixRearrangement2b_encode(string M, string Key)
@@ -233,13 +233,13 @@ namespace SzyfrySieci1
             M = String.Join("", M.Split(' '));
             int messageLength = M.Length;
             int keyLength = Key.Length;
-            int numOfFullLines = messageLength / keyLength; // liczba pełnych (długości klucza) wierszy macierzy
+            int numOfFullLines = messageLength / keyLength; // liczba pełnych (tzn. długości klucza) wierszy macierzy
             char[][] matrix = new char[numOfFullLines][];
             
             for (int i = 0; i<numOfFullLines; i++)
-                matrix[i] = M.Substring(i * keyLength, keyLength).ToCharArray();
+                matrix[i] = M.Substring(i * keyLength, keyLength).ToCharArray(); //pełne wiersze macierzy mają długość klucza
 
-            int numOfOtherLetters = messageLength % keyLength; // litery poza pełnymi wierszami
+            int numOfOtherLetters = messageLength % keyLength; //litery poza pełnymi wierszami
             char[] notFullLine;
             string otherLetters = null;
             if (numOfOtherLetters > 0)
@@ -260,16 +260,17 @@ namespace SzyfrySieci1
             }
 
             keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray();
+            //w tablicy posiadamy litery z klucza posortowane pierw względem kolejności w alfabecie, a następnie względem kolejności pierwotnej w kluczu
 
             StringBuilder C = new StringBuilder();
-            int handledColumn; //kopiowana kolumna macierzy
+            int handledColumn;
             for (int i = 0; i<keyLength; i++)
             {
-                handledColumn = keyLetters[i].initialIndice;
-                for (int j = 0; j< numOfFullLines; j++)
-                   C.Append(matrix[j][handledColumn]);
+                handledColumn = keyLetters[i].initialIndice; 
+                for (int j = 0; j < numOfFullLines; j++)
+                   C.Append(matrix[j][handledColumn]); //z każdego wiersza pobieramy znaki aktualnie przetwarzanej kolumny analogicznej kolejnościowo do pierwotnego indeksu kolejnej z posortowanych liter w kluczu
 
-                if (handledColumn < numOfOtherLetters)
+                if (handledColumn < numOfOtherLetters) //jeśli dana kolumna obejmuje litery ostatniego, niepełnego wiersza macierzy
                     C.Append(otherLetters[handledColumn]);
 
             }
@@ -295,6 +296,7 @@ namespace SzyfrySieci1
             }
 
             keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray();
+            //sortowanie alfabetycznie, tożsame z tym w metodzie encode
 
             int numOfFullMatrixLines = CLength / keyLength;
             int numOfOtherMatrixLetters = CLength % keyLength;
@@ -311,11 +313,11 @@ namespace SzyfrySieci1
 
             int nextBlockBeginning = 0;
             int lettersToCut;
-            for (int i = 0; i < keyLength; i++) // dla każdej litery z klucza odpowiada kolumna macierzy wiadomości M
+            for (int i = 0; i < keyLength; i++) // każdej literze klucza odpowiada kolumna macierzy wiadomości M
             {
-                handledMColumn = keyLetters[i].initialIndice; // initialIndice wskazuje na to, który w kolejności blok szyfru C wypełniła dana kolumna macierzy wiadomości M
+                handledMColumn = keyLetters[i].initialIndice; // kolejny blok szyfru C pochodzi z kolumny o indeksie równym pierwotnemu indeksowi i-tej litery posortowanej tablicy liter klucza
 
-                if (handledMColumn < numOfOtherMatrixLetters)
+                if (handledMColumn < numOfOtherMatrixLetters) //jeżeli mamy do czynienia z kolumną, która ma literę wspólną z ostatnim, niepełnym wierszem macierzy
                     lettersToCut = numOfMatrixLines;
                 else
                     lettersToCut = numOfFullMatrixLines;
@@ -326,7 +328,7 @@ namespace SzyfrySieci1
 
             StringBuilder M = new StringBuilder();
 
-            for (int line = 0; line < numOfFullMatrixLines; line++)
+            for (int line = 0; line < numOfFullMatrixLines; line++) //pobieram kolejno wierszami kolejne znaki wiadomości wejściowej M
                 foreach (string column in MatrixColumns)
                     M.Append(column[line]);
 
