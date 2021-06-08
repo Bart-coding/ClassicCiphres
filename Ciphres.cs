@@ -565,13 +565,13 @@ namespace SzyfrySieci1
 
 
             for (int i = 0; i < messageLength; i++)
-                stringBuilder.Append(VigenereSquare[(int)M[i] - 65, (int)K[i] - 65]);
+                stringBuilder.Append(VigenereSquare[(int)M[i] - 65, (int)K[i] - 65]); // dla każdej kolumny tablicy Vigenere'a odpowiadającej danej literze wiadomości pobieramy znak z wiersza o numerze znajd. się pod analogicznym indeksem klucza
 
 
             return stringBuilder.ToString(); //EK(M)
         }
 
-        public string Vigenere_decode(string EK, string K) // EK is encrypted message
+        public string Vigenere_decode(string EK, string K) // EK to zaszyfrowana wiadomość
         {
             char[,] VigenereSquare = this.VigenereSquare;
             StringBuilder stringBuilder;
@@ -580,21 +580,24 @@ namespace SzyfrySieci1
 
             int EKLength = EK.Length;
             int initialKeyLength = K.Length;
-            if (EKLength < initialKeyLength)
-                K = K.Substring(0, EKLength);
-            else if (EKLength > initialKeyLength)
+            if (EKLength < initialKeyLength) //gdy długość zaszyfrowanej wiadomości jest krótsza od długości klucza
+                K = K.Substring(0, EKLength); //obcinamy klucz do długości wiadomości
+            else if (EKLength > initialKeyLength) //gdy długość zaszyfrowanej wiadomości jest dłuższa od długości klucza
             {
                 int lengthDifference = EKLength - initialKeyLength;
-                stringBuilder = new StringBuilder(K);
-                if (lengthDifference <= initialKeyLength)
-                    K = stringBuilder.Append(K.Substring(0, lengthDifference)).ToString();
-                else
+                stringBuilder = new StringBuilder(K); //pobieramy aktualną postać klucza
+                if (lengthDifference <= initialKeyLength) //jeśli różnica między długością wiadomości a długością klucza nie przekracza długości klucza
+                    K = stringBuilder.Append(K.Substring(0, lengthDifference)).ToString(); //dodajemy do klucza jego początkową część długości wcześniej obliczonej różnicy
+                else //jeśli różnica między długością wiadomości a długością klucza jest co najmniej długości klucza
                 {
                     string initialKeyValue = K;
-                    for (int i = 0; i < lengthDifference / initialKeyLength; i++)
-                        K = stringBuilder.Append(initialKeyValue).ToString();
-                    if (K.Length != initialKeyLength)
-                        K = stringBuilder.Append(K.Substring(0, EKLength - K.Length)).ToString();
+                    for (int i = 0; i < lengthDifference / initialKeyLength; i++) //tyle razy ile pełny klucz "zmieści się" we wcześniej wyliczonej różnicy
+                        stringBuilder.Append(initialKeyValue); //dodajemy do klucza jego pierwotną wartość
+
+                    if (stringBuilder.Length < EKLength) //jeśli jeszcze niedopełniono do długości wiadomości
+                        stringBuilder.Append(stringBuilder.ToString().Substring(0, EKLength - stringBuilder.Length)); //dopełniamy różnicą
+                       
+                    K = stringBuilder.ToString();
                 }
             }
             stringBuilder = new StringBuilder();
@@ -604,7 +607,7 @@ namespace SzyfrySieci1
                 for (int j = 0; j < 26; j++)
                 {
                     cellToTest = VigenereSquare[j, (int)K[i] - 65];
-                    if (cellToTest == EK[i])
+                    if (cellToTest == EK[i]) // jeśli j-ta kolumna macierzy da w K[i]-tym (numerycznie) wierszu EK[i], to jest to jeden z poszukiwanych znaków wiadomości wejściowej
                     {
                         stringBuilder.Append((char)(j + 65));
                         break;
