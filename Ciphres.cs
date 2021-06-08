@@ -118,7 +118,7 @@ namespace SzyfrySieci1
             return new string(M);
         }
 
-        public string MatrixRearrangement2a_encode(string M, string key, int d)
+        public string MatrixRearrangement2a_encode(string M, string key, int d) //d mogłoby być także wyznaczane z klucza
         {
             List<string> fullLines = new List<string>();
             string notFullLine = null; // ostatnia linia o niepełnej długości
@@ -166,7 +166,7 @@ namespace SzyfrySieci1
             return C.ToString();
         }
 
-        public string MatrixRearrangement2a_decode(string C, string key, int d)
+        public string MatrixRearrangement2a_decode(string C, string key, int d) //d mogłoby być także wyznaczane z klucza
         {
             List<string> fullLines = new List<string>(); // lista wierszy macierzy długości klucza
             string notFullLine = null; // ostatni wiersz macierzy o niepełnej długości
