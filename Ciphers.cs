@@ -260,7 +260,7 @@ namespace SzyfrySieci1
             }
 
             keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray();
-            //w tablicy posiadamy litery z klucza posortowane pierw względem kolejności w alfabecie, a następnie względem kolejności pierwotnej w kluczu
+            //w tablicy zawarte są litery z klucza posortowane pierw względem kolejności w alfabecie, a następnie względem kolejności pierwotnej w kluczu
 
             StringBuilder C = new StringBuilder();
             int handledColumn;
@@ -268,7 +268,7 @@ namespace SzyfrySieci1
             {
                 handledColumn = keyLetters[i].initialIndice; 
                 for (int j = 0; j < numOfFullLines; j++)
-                   C.Append(matrix[j][handledColumn]); //z każdego wiersza pobieramy znaki aktualnie przetwarzanej kolumny analogicznej kolejnościowo do pierwotnego indeksu kolejnej z posortowanych liter w kluczu
+                   C.Append(matrix[j][handledColumn]); //z każdego wiersza pobieram znaki aktualnie przetwarzanej kolumny analogicznej kolejnościowo do pierwotnego indeksu kolejnej z posortowanych liter w kluczu
 
                 if (handledColumn < numOfOtherLetters) //jeśli dana kolumna obejmuje litery ostatniego, niepełnego wiersza macierzy
                     C.Append(otherLetters[handledColumn]);
@@ -356,19 +356,21 @@ namespace SzyfrySieci1
                 };
             }
 
-            keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray() ;
+            keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray();
+            //w tablicy zawarte są litery z klucza posortowane pierw względem kolejności w alfabecie, a następnie względem kolejności pierwotnej w kluczu
 
-            List<string> matrixLines = new List<string>();
+
+            List<string> matrixLines = new List<string>(); //lista wierszy macierzy
             int incrementedKeyLetterIdx;
 
             for (int startIdxOfNextMessageBlock = 0, i = 0; startIdxOfNextMessageBlock < MLength; i++)
             {
                 incrementedKeyLetterIdx = keyLetters[i].initialIndice + 1;
-                if (startIdxOfNextMessageBlock + incrementedKeyLetterIdx > MLength)
-                    incrementedKeyLetterIdx -= (startIdxOfNextMessageBlock + incrementedKeyLetterIdx) - MLength;
+                if (startIdxOfNextMessageBlock + incrementedKeyLetterIdx > MLength) //jeśli długość wiadomości wejściowej M może zostać przekroczona
+                    incrementedKeyLetterIdx -= (startIdxOfNextMessageBlock + incrementedKeyLetterIdx) - MLength; //to nie biorę tyle liter na ile wskazuje zinkrementowany indeks klucza, a tyle, ile mogę maksymalnie wziąć
                     
-                matrixLines.Add(M.Substring(startIdxOfNextMessageBlock, incrementedKeyLetterIdx));
-                startIdxOfNextMessageBlock += incrementedKeyLetterIdx;
+                matrixLines.Add(M.Substring(startIdxOfNextMessageBlock, incrementedKeyLetterIdx)); //wycinam z wejścia podciąg od danego indeksu o ustalonej uprzednio długości
+                startIdxOfNextMessageBlock += incrementedKeyLetterIdx; //indeks następnego bloku/podciągu/wiersza to następna litera po ostatnio pobranej
                 
             }
 
@@ -376,9 +378,9 @@ namespace SzyfrySieci1
             foreach (KeyLetter keyLetter in keyLetters)
             {
                 int keyLetterIdx = keyLetter.initialIndice;
-                foreach (string matrixLine in matrixLines)
+                foreach (string matrixLine in matrixLines) //pobieram dla każdego indeksu litery z klucza po jednej literze z każdego wiersza (pobierając de facto kolumnę)
                 {
-                    if (keyLetterIdx < matrixLine.Length)
+                    if (keyLetterIdx < matrixLine.Length) //pobieram tylko wtedy, kiedy mogę (indeks litery z klucza może przekraczać wiersz)
                         C.Append(matrixLine[keyLetterIdx]);
                 }
             }
