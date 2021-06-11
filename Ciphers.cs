@@ -19,7 +19,7 @@ namespace SzyfrySieci1
             if (k == 1) //przypadek dla wysokości płotku = 1
                 return M;
 
-            List<StringBuilder> fence = new List<StringBuilder>(); //płotek
+            List<StringBuilder> fence = new List<StringBuilder>(); //płotek jako lista szczebli/"szyn"
             for (int i = 0; i < k; i++)
             {
                 StringBuilder rail = new StringBuilder(); //tworzenie k szczebli
@@ -30,7 +30,7 @@ namespace SzyfrySieci1
             bool down = true;   //domyślnie idzie się od góry płotka w dół (pierwotnym płotkiem jest najwyższy)
             foreach (char c in M) //dla każdego znaku w słowie wejściowym M
             {
-                if (down) //jeżeli wyznaczono, by iść w dół płotka (dla szczebla j=0 jako najwyzszego i j=k-1 dla jako najniższego)
+                if (down) //jeżeli wyznaczono, by iść w dół płotka (dla szczebla o indeksie j = 0 jako najwyzszego i j = k-1 dla jako najniższego)
                 {
                     if (j != k - 1) //jeżeli nie dotarto jeszcze do najniższego szczebla
                         j++;    //idź w dół płotka
@@ -73,37 +73,37 @@ namespace SzyfrySieci1
 
             string[] rails = new string[k];
 
-            int numOfLettersInRail = 1 + numOfFullVLikeParts; //w górnej szynie jest tyle liter, ile jest części V + 1-sza litera
+            int numOfLettersInRail = 1 + numOfFullVLikeParts; //w górnym szczeblu jest tyle liter, ile jest części V + 1-sza litera C
             rails[0] = C.Substring(0, numOfLettersInRail);
             int firstIndexOfNextRail = 0;
             for (int i = 1; i < k - 1; i++)
             {
                 firstIndexOfNextRail += numOfLettersInRail;
                 numOfLettersInRail = 2 * numOfFullVLikeParts + (numOfOtherLetters >= i ? numOfOtherLetters >= i + 2 * (k - (i + 1)) ? 2 : 1 : 0);
-                    //w "wewnętrznej" szynie jest tyle liter, ile wynosi dwukrotność części V powiększona o 1 lub 2 litery z ewent. niepełnej części V; 2*(k-(i+1)) to odległość litery z "wnętrza" (nie)pełnej częsci V do kolejnej z tego wnętrza na tej samej wysokości
+                    //w "wewnętrznym" szczeblu jest tyle liter, ile wynosi dwukrotność części V powiększona o 1 lub 2 litery z ewent. niepełnej części V; 2*(k-(i+1)) to odległość litery z "wnętrza" (nie)pełnej częsci V do kolejnej z tego wnętrza na tej samej wysokości
                 rails[i] = C.Substring(firstIndexOfNextRail, numOfLettersInRail);
             }
             firstIndexOfNextRail += numOfLettersInRail;
-            numOfLettersInRail = numOfFullVLikeParts + (numOfOtherLetters >= k - 1 ? 1 : 0); //w dolnej szynie jest tyle liter, ile jest części V i ewentualnie dodatkowa jeśli pozostałych liter jest chociaż k-1
+            numOfLettersInRail = numOfFullVLikeParts + (numOfOtherLetters >= k - 1 ? 1 : 0); //w dolnym szczeblu jest tyle liter, ile jest części V i ewentualnie dodatkowa jeśli pozostałych liter jest chociaż k-1
             rails[k - 1] = C.Substring(firstIndexOfNextRail, numOfLettersInRail);
 
             char[] M = new char[C.Length];
             int shift;
             int lastChangedIndex = 0;
-            for (int i = 0; i < k; i++) //dla każdej szyny
+            for (int i = 0; i < k; i++) //dla każdego sczebla
             {
                 if (i == 0 || i == k - 1)
                 {
                     shift = 2 * k - 2;
-                    for (int j = 0; j < rails[i].Length; j++) //każdą literę z szyny
-                        M[i + shift * j] = rails[i][j];       //umieszczamy w ciągu wynikowym co shift równy długości części V
+                    for (int j = 0; j < rails[i].Length; j++) //każdą literę ze szczebla
+                        M[i + shift * j] = rails[i][j];       //umieszczamy w ciągu wynikowym co przesunięcie równe długości części V
                     continue;
                 }
                 for (int j = 0; j < rails[i].Length; j++)
                 {
                     if (j == 0)
                     {
-                        M[i] = rails[i][0]; //wszystkie pierwsze litery "wewn." szyn znajdują się na początku wyjścia (pomiędzy indeksem 0 a indeksem k-1)
+                        M[i] = rails[i][0]; //wszystkie pierwsze litery "wewn." szczebli znajdują się na początku wyjścia (pomiędzy indeksem 0 a indeksem k-1)
                         lastChangedIndex = i;
                     }
                     else
@@ -155,7 +155,7 @@ namespace SzyfrySieci1
                     C.Append(line[indice]); // dodajemy do wyniku literę z wiersza znajdującą się pod danym indeksem
                 }
             }
-            if (notFullLine != null) // dla niepełnego wierszarsza
+            if (notFullLine != null) // dla niepełnego wiersza (jeśli jest)
             {
                 foreach (int indice in keyIndices)
                 {
@@ -176,7 +176,7 @@ namespace SzyfrySieci1
 
             int numOfFullLines = C.Length / d;
 
-            for (int i = 0; i < numOfFullLines; i++) //analogicznie do metody encode pobieram kolejne bloki liter z wejścia do macierzy (szyfru C)
+            for (int i = 0; i < numOfFullLines; i++) //analogicznie do metody encode pobieram kolejne bloki liter z wejścia do macierzy (macierzy szyfru C)
             {
                 fullLines.Add(C.Substring(i * d, d));
             }
@@ -296,7 +296,7 @@ namespace SzyfrySieci1
             }
 
             keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray();
-            //sortowanie alfabetycznie, tożsame z tym w metodzie encode
+            //sortowanie alfabetycznie, tożsame z tym w metodzie encode()
 
             int numOfFullMatrixLines = CLength / keyLength;
             int numOfOtherMatrixLetters = CLength % keyLength;
@@ -380,7 +380,7 @@ namespace SzyfrySieci1
                 int keyLetterIdx = keyLetter.initialIndice;
                 foreach (string matrixLine in matrixLines) //pobieram dla każdego indeksu litery z klucza po jednej literze z każdego wiersza (pobierając de facto kolumnę)
                 {
-                    if (keyLetterIdx < matrixLine.Length) //pobieram tylko wtedy, kiedy mogę (indeks litery z klucza może przekraczać wiersz)
+                    if (keyLetterIdx < matrixLine.Length) //pobieram tylko wtedy, kiedy mogę (indeks litery z klucza nie może przekraczać wiersza)
                         C.Append(matrixLine[keyLetterIdx]);
                 }
             }
@@ -406,20 +406,23 @@ namespace SzyfrySieci1
             }
 
             keyLetters = keyLetters.OrderBy(keyLetter => keyLetter.value).ThenBy(keyLetter => keyLetter.initialIndice).ToArray();
+            //analogiczne sortowanie alfabetyczne liter z klucza jak w metodzie encode()
 
-            int fullMatrixLinesCounter;
-            int numOfAllMatrixLines = 0;
-            int matrixLettersCounter = 0, numOfOtherMatrixLetters = 0;
-            for (fullMatrixLinesCounter = 0; fullMatrixLinesCounter < keyLetters.Length; fullMatrixLinesCounter++)
+            int fullMatrixLinesCounter; //liczba pełnych wierszy macierzy
+            int numOfAllMatrixLines = 0; //liczba wszystkich wierszy macierzy
+            int matrixLettersCounter = 0, numOfOtherMatrixLetters = 0; //liczba liter w macierzy i liczba liter w niepełnej linii macierzy (jeśli takiej nie ma, pozostaje = 0)
+            for (fullMatrixLinesCounter = 0; fullMatrixLinesCounter < keyLetters.Length; fullMatrixLinesCounter++) //pętla liczy zarówno liczbę wierszy macierzy, jak i liter
             {
-                matrixLettersCounter += keyLetters[fullMatrixLinesCounter].initialIndice + 1;
+                matrixLettersCounter += keyLetters[fullMatrixLinesCounter].initialIndice + 1; //potencjalna lub pewna zaktualizowana liczba liter w macierzy
 
-                if (matrixLettersCounter >= CLength)
+                if (matrixLettersCounter >= CLength)//liter w macierzy nie może być więcej niż C, a jeśli jest tyle samo także oznacza to koniec działania pętli
                 {
                     if (matrixLettersCounter > CLength)
                     {
-                        numOfOtherMatrixLetters = CLength - (matrixLettersCounter - (keyLetters[fullMatrixLinesCounter--].initialIndice + 1));
-                        numOfAllMatrixLines++; //tymczasowo, później zostaje podniesiona o liczbę pełnych wierszy
+                        numOfOtherMatrixLetters = CLength - (matrixLettersCounter - (keyLetters[fullMatrixLinesCounter--].initialIndice + 1)); 
+                        //liczba liter ostatniego, niepełnego wiersza macierzy to tyle, ile pozostało liter do wzięcia 
+                        //(liczba liter C zmniejszona o różnicę między ostatnią potencjalną liczbą liter macierzy i ostatnio doliczonym indeksem klucza)
+                        numOfAllMatrixLines++; //tymczasowo liczę jedynie ostatni, niepełny wiersz, później ta liczba zostaje podniesiona o liczbę pełnych wierszy
                     }
                     break;
                 }
@@ -427,33 +430,34 @@ namespace SzyfrySieci1
 
             matrixLettersCounter = CLength;
             fullMatrixLinesCounter++; //wcześniej wiersze macierzy były liczone od 0
-            numOfAllMatrixLines += fullMatrixLinesCounter;
+            numOfAllMatrixLines += fullMatrixLinesCounter; //"zapowiedziane" zaktualizowanie liczby wszystkich wierszy macierzy
 
-            List<int> matrixColumnsLength = new List<int>(); //długości kolumn macierzy i zarazem długości bloków szyfru
+            List<int> matrixColumnsLength = new List<int>(); //lista liczby liter kolumn macierzy i zarazem długości bloków szyfru
             int letterCounter = 0;
             int handledColumnLength = 0;
             int handledColumnIdx = 0;
 
-            List<StringBuilder> matrixColumns = new List<StringBuilder>();
+            List<StringBuilder> matrixColumns = new List<StringBuilder>(); //lista kolumn macierzy; będą to kolumny analogicznie do kolejnych bloków szyfru, więc ich kolejność nie będzie taka jak w macierzy wejściowej
             int CCharIdx = 0;
             while (letterCounter != CLength)
             {
                 matrixColumns.Add(new StringBuilder());
                 for (int i = 0; i<fullMatrixLinesCounter; i++)
                 {
-                    if (keyLetters[i].initialIndice >= keyLetters[handledColumnIdx].initialIndice)
+                    //dla kolejnego pierwotnego indeksu z posortowanej alfabetycznie tablicy liter kluczowych chcę dodać dla kolejnej kolumny po jednej kolejnej literze z C (jeśli można)
+                    if (keyLetters[i].initialIndice >= keyLetters[handledColumnIdx].initialIndice) //jeśli dany wiersz "dosięga" danej kolumny
                     {
                         matrixColumns[handledColumnIdx].Append(C[CCharIdx++]);
-                        handledColumnLength++;
+                        handledColumnLength++; //równolegle jest kontrolowana liczba "niepustych" znaków kolumny
                     }
-                    else
+                    else //jeśli nie, do ciągu liter danej kolumny macierzy doklejam znak null sygnalizujący jej "wybrakowanie" w tym miejscu
                     {
                         matrixColumns[handledColumnIdx].Append('\0');
                     }
                         
                 }
 
-                if (numOfOtherMatrixLetters > keyLetters[handledColumnIdx].initialIndice)
+                if (numOfOtherMatrixLetters > keyLetters[handledColumnIdx].initialIndice) //analogiczna sytuacja jak w pętli odbywa się dla ostatniego, "niepełnego" wiersza macierzy (jeśli jest)
                 {
                     matrixColumns[handledColumnIdx].Append(C[CCharIdx++]);
                     handledColumnLength++;
@@ -464,7 +468,7 @@ namespace SzyfrySieci1
                 }
                         
 
-                matrixColumnsLength.Add(handledColumnLength); // kolumny są nieposortowane; ułożone są w kolejności w jakiej były brane do szyfru
+                matrixColumnsLength.Add(handledColumnLength); // kolumny są nieposortowane; ułożone są w kolejności w jakiej były brane do szyfru (zrezygnowano z użyci teja listy)
                 letterCounter += handledColumnLength;
                 handledColumnLength = 0;
                 handledColumnIdx++;
@@ -473,13 +477,13 @@ namespace SzyfrySieci1
 
             StringBuilder M = new StringBuilder();
 
-            for (int i = 0; i < numOfAllMatrixLines; i++)
+            for (int i = 0; i < numOfAllMatrixLines; i++) //dla każdego wiersza macierzy
             {
-                for (int j = 0; j < keyLetters.Length; j++)
+                for (int j = 0; j < keyLetters.Length; j++) //dla każdej litery klucza (z posortowanej alfabetycznie tablicy)
                 {
-                    handledColumnIdx = Array.FindIndex(keyLetters, keyLetter => keyLetter.initialIndice == j);
-                    if (matrixColumns[handledColumnIdx][i] != '\0')
-                        M.Append(matrixColumns[handledColumnIdx][i]);
+                    handledColumnIdx = Array.FindIndex(keyLetters, keyLetter => keyLetter.initialIndice == j); //poszukuję kolejności alfabetycznej litery, która zajmowała pierwotnie j-ty indeks klucza, żeby pobrać właściwą kolumnę z nieposortowanej listy
+                    if (matrixColumns[handledColumnIdx][i] != '\0') 
+                        M.Append(matrixColumns[handledColumnIdx][i]); //pobieram kolejne litery z danego wiersza i dodaję je do wyjściowego ciągu odtwarzając wiadomość wejściową M
                 }
             }
 
@@ -586,21 +590,21 @@ namespace SzyfrySieci1
             int EKLength = EK.Length;
             int initialKeyLength = K.Length;
             if (EKLength < initialKeyLength) //gdy długość zaszyfrowanej wiadomości jest krótsza od długości klucza
-                K = K.Substring(0, EKLength); //obcinamy klucz do długości wiadomości
+                K = K.Substring(0, EKLength); //obcinam klucz do długości wiadomości
             else if (EKLength > initialKeyLength) //gdy długość zaszyfrowanej wiadomości jest dłuższa od długości klucza
             {
                 int lengthDifference = EKLength - initialKeyLength;
-                stringBuilder = new StringBuilder(K); //pobieramy aktualną postać klucza
+                stringBuilder = new StringBuilder(K); //pobieram aktualną postać klucza
                 if (lengthDifference <= initialKeyLength) //jeśli różnica między długością wiadomości a długością klucza nie przekracza długości klucza
                     K = stringBuilder.Append(K.Substring(0, lengthDifference)).ToString(); //dodajemy do klucza jego początkową część długości wcześniej obliczonej różnicy
                 else //jeśli różnica między długością wiadomości a długością klucza jest co najmniej długości klucza
                 {
                     string initialKeyValue = K;
                     for (int i = 0; i < lengthDifference / initialKeyLength; i++) //tyle razy ile pełny klucz "zmieści się" we wcześniej wyliczonej różnicy
-                        stringBuilder.Append(initialKeyValue); //dodajemy do klucza jego pierwotną wartość
+                        stringBuilder.Append(initialKeyValue); //dodaję do klucza jego pierwotną wartość
 
                     if (stringBuilder.Length < EKLength) //jeśli jeszcze niedopełniono do długości wiadomości
-                        stringBuilder.Append(stringBuilder.ToString().Substring(0, EKLength - stringBuilder.Length)); //dopełniamy różnicą
+                        stringBuilder.Append(stringBuilder.ToString().Substring(0, EKLength - stringBuilder.Length)); //dopełniam różnicą
                        
                     K = stringBuilder.ToString();
                 }
@@ -622,7 +626,8 @@ namespace SzyfrySieci1
             return stringBuilder.ToString(); //EK(M)
         }
 
-        public char[,] GenerateVigenereSquare() // może to być również tablica wartości całkowitych znaków ASCII
+        public char[,] GenerateVigenereSquare() // może to być również tablica wartości całkowitych znaków ASCII; 
+                                                //mamy tu jednak co czynienia z tablicą dla dużych liter tak jak w przykładzie z treści
         {
             char[,] VigenereSquare = new char[26, 26];
             for (int i = 0; i < 26; i++)
