@@ -80,7 +80,8 @@ namespace SzyfrySieci1
             {
                 firstIndexOfNextRail += numOfLettersInRail;
                 numOfLettersInRail = 2 * numOfFullVLikeParts + (numOfOtherLetters >= i ? numOfOtherLetters >= i + 2 * (k - (i + 1)) ? 2 : 1 : 0);
-                    //w "wewnętrznym" szczeblu jest tyle liter, ile wynosi dwukrotność części V powiększona o 1 lub 2 litery z ewent. niepełnej części V; 2*(k-(i+1)) to odległość litery z "wnętrza" (nie)pełnej częsci V do kolejnej z tego wnętrza na tej samej wysokości
+                //w "wewnętrznym" szczeblu jest tyle liter, ile wynosi dwukrotność części V powiększona o 1 lub 2 litery z ewent. niepełnej części V; 
+                //2*(k-(i+1)) to odległość litery z "wnętrza" (nie)pełnej częsci V do kolejnej z tego wnętrza na tej samej wysokości
                 rails[i] = C.Substring(firstIndexOfNextRail, numOfLettersInRail);
             }
             firstIndexOfNextRail += numOfLettersInRail;
@@ -112,7 +113,7 @@ namespace SzyfrySieci1
                                                                                 //para liter w obrębie tej samej "części w kształcie litery V" jest oddalona od siebie inaczej niż para liter z różnych takich "części V" płotka
                                                                                 //jeśli j jest parzyste, to należy umieścić literę w miejscu oddalonym od poprzedniego o dwukrotną "odległość" szyny od zera (ruch od poprzedniej części V do nowej)
                                                                                 //jeśli nie, w miejscu oddalonym o dwukrotną odległość szyny od drugiego końca (ruch w obrębie tej samej części V)
-                        M[lastChangedIndex + shift] = rails[i][j];  
+                        M[lastChangedIndex + shift] = rails[i][j];
                         lastChangedIndex += shift;
                     }
                 }
@@ -120,6 +121,9 @@ namespace SzyfrySieci1
 
             return new string(M);
         }
+        
+        
+        
 
         public string MatrixRearrangement2a_encode(string M, string key, int d) //d mogłoby być także wyznaczane z klucza
         {
@@ -274,7 +278,6 @@ namespace SzyfrySieci1
                     C.Append(otherLetters[handledColumn]);
 
             }
-
             return C.ToString();
         }
 
@@ -411,6 +414,7 @@ namespace SzyfrySieci1
             int fullMatrixLinesCounter; //liczba pełnych wierszy macierzy
             int numOfAllMatrixLines = 0; //liczba wszystkich wierszy macierzy
             int matrixLettersCounter = 0, numOfOtherMatrixLetters = 0; //liczba liter w macierzy i liczba liter w niepełnej linii macierzy (jeśli takiej nie ma, pozostaje = 0)
+            int maxNumOfLettersInLine = 0; //pomaga stwierdzić, które kolumny macierzy stworzonej na podstawie klucza są nieprzydatne, bo przekraczają "rozpiętość" wiadomości wejściowej w macierzy
             for (fullMatrixLinesCounter = 0; fullMatrixLinesCounter < keyLetters.Length; fullMatrixLinesCounter++) //pętla liczy zarówno liczbę wierszy macierzy, jak i liter
             {
                 matrixLettersCounter += keyLetters[fullMatrixLinesCounter].initialIndice + 1; //potencjalna lub pewna zaktualizowana liczba liter w macierzy
@@ -423,9 +427,15 @@ namespace SzyfrySieci1
                         //liczba liter ostatniego, niepełnego wiersza macierzy to tyle, ile pozostało liter do wzięcia 
                         //(liczba liter C zmniejszona o różnicę między ostatnią potencjalną liczbą liter macierzy i ostatnio doliczonym indeksem klucza)
                         numOfAllMatrixLines++; //tymczasowo liczę jedynie ostatni, niepełny wiersz, później ta liczba zostaje podniesiona o liczbę pełnych wierszy
+
+                        if (maxNumOfLettersInLine < numOfOtherMatrixLetters)
+                            maxNumOfLettersInLine = numOfOtherMatrixLetters;
                     }
                     break;
                 }
+
+                if (maxNumOfLettersInLine < keyLetters[fullMatrixLinesCounter].initialIndice + 1)
+                    maxNumOfLettersInLine = keyLetters[fullMatrixLinesCounter].initialIndice + 1;
             }
 
             matrixLettersCounter = CLength;
@@ -468,7 +478,7 @@ namespace SzyfrySieci1
                 }
                         
 
-                matrixColumnsLength.Add(handledColumnLength); // kolumny są nieposortowane; ułożone są w kolejności w jakiej były brane do szyfru (zrezygnowano z użyci teja listy)
+                matrixColumnsLength.Add(handledColumnLength); // kolumny są nieposortowane; ułożone są w kolejności w jakiej były brane do szyfru (zrezygnowano z użycia tej listy)
                 letterCounter += handledColumnLength;
                 handledColumnLength = 0;
                 handledColumnIdx++;
@@ -479,7 +489,7 @@ namespace SzyfrySieci1
 
             for (int i = 0; i < numOfAllMatrixLines; i++) //dla każdego wiersza macierzy
             {
-                for (int j = 0; j < keyLetters.Length; j++) //dla każdej litery klucza (z posortowanej alfabetycznie tablicy)
+                for (int j = 0; j < maxNumOfLettersInLine /*keyLetters.Length*/; j++) //dla każdej litery klucza, której odpowiada "osiągalny" pierwotny indeks (z posortowanej alfabetycznie tablicy)
                 {
                     handledColumnIdx = Array.FindIndex(keyLetters, keyLetter => keyLetter.initialIndice == j); //poszukuję kolejności alfabetycznej litery, która zajmowała pierwotnie j-ty indeks klucza, żeby pobrać właściwą kolumnę z nieposortowanej listy
                     if (matrixColumns[handledColumnIdx][i] != '\0') 
@@ -574,7 +584,8 @@ namespace SzyfrySieci1
 
 
             for (int i = 0; i < messageLength; i++)
-                stringBuilder.Append(VigenereSquare[(int)M[i] - 65, (int)K[i] - 65]); // dla każdej kolumny tablicy Vigenere'a odpowiadającej danej literze wiadomości pobieramy znak z wiersza o numerze znajd. się pod analogicznym indeksem klucza
+                stringBuilder.Append(VigenereSquare[(int)M[i] - 65, (int)K[i] - 65]); 
+            // dla każdej kolumny tablicy Vigenere'a odpowiadającej danej literze wiadomości pobieramy znak z wiersza o numerze znajd. się pod analogicznym indeksem klucza
 
 
             return stringBuilder.ToString(); //EK(M)
@@ -635,9 +646,7 @@ namespace SzyfrySieci1
                 for (int j = 0; j < 26; j++)
                 {
                     VigenereSquare[i, j] = (char)((i + j) % 26 + 65);
-                    //Console.Write(VigenereSquare[i, j] + " ");
                 }
-                //Console.WriteLine(" ");
             }
 
             return VigenereSquare;
